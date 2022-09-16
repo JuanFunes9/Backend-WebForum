@@ -11,8 +11,8 @@ const getAllPosts = async (req, res) => {
 const getPostById = async (req, res) => {
 	const { _id } = req.params;
 	const post = await Post.findById({ _id, state: true })
-		.populate('author', { username: 1, img: 1 })
-		.populate('comments', { author: 1, text: 1 })
+		.populate('author', { username: 1, _id: 0 })
+		.populate('comments.author', {username: 1, _id: 0, image: 1});
 
 	if (!post) {
 		return res.status(400).json({
@@ -29,10 +29,21 @@ const getPostById = async (req, res) => {
 
 const newPost = async (req, res) => {
 	try {
-		const { categorie, title, text, img, author } = req.body;
-		const newPost = new Post({ categorie, title, text, img, author });
+		const { categorie, title, text } = req.body;
+		// const newPost = new Post({ categorie, title, text, img });
+		const newPost = { categorie, title, text }
 
-		await newPost.save()
+		newPost.author = req.uid;
+
+		if(!req.files){
+			console.log("File not found")
+		} else {
+			console.log(req.files.img)
+		}
+		console.log(req.headers)
+		console.log(newPost)
+
+		// await newPost.save()
 		return res.json({
 			ok: true,
 			msg: "Post agregado con exito",
@@ -50,11 +61,13 @@ const newPost = async (req, res) => {
 
 const newComment = async (req, res) => {
 	try {
-		const { post_id } = req.params;
-		const { author, text } = req.body;
-		const comment = { author, text };
+		const { _id } = req.params;
+		const { text } = req.body;
+		const comment = { text };
 
-		const post = await Post.findById(post_id);
+		comment.author = req.uid;
+
+		const post = await Post.findById(_id);
 
 		post.comments.push(comment);
 

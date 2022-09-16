@@ -32,7 +32,12 @@ const logUser = async (req, res) => {
 		res.json({
 			ok: true,
 			msg: "loging correcto",
-			token
+			user: {
+				image: user.image,
+				username: user.username,
+				email: user.email
+			},
+			token: `Bearer ${token}`
 		})
 	} catch (error) {
 		console.log(error);
@@ -53,14 +58,19 @@ const registerUser = async (req, res) => {
 	newUser.password = bcryptjs.hashSync(newUser.password, salt);
 
 	//Guardar nuevo User en DB:
-	await newUser.save();
+	const resp = await newUser.save();
+
+	//generar un Token de Acesso y devolver
+	const token = await generateJWT(resp._id);
 
 	res.json({
 		ok: true,
 		user: {
+			image: resp.image,
 			username,
 			email
-		}
+		},
+		token: `Bearer ${token}`
 	})
 }
 

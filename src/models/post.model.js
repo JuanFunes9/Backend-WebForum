@@ -31,12 +31,14 @@ const PostSchema = Schema({
 			text: {
 				type: String
 			}
-		}]
+		}, {timestamps: true}]
 	},
 	state: {
 		type: Boolean,
 		default: true
 	}
+}, {
+	timestamps: true
 })
 
 module.exports = model('Post', PostSchema);
